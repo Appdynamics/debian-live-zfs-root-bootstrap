@@ -8,7 +8,27 @@
 * `lb clean --purge && lb build`
 
 # Usage
-* dd the resulting .iso file onto a USB key or connect it to your blank VM and boot it.
+
+## Mac Host Configuration
+* VirtualBox
+  * File -> Preferences
+    * Network:
+      * Host-only Networks
+        * Create a new host-only network (i.e. vboxnet0)
+* Virtual Machine
+  * Network
+    * Adapter 1:
+      * Attached to: NAT
+      * Advanced
+        * Adapter type: Paravirtualized Network (virtio-net)
+    * Adapter 2:
+      * Attached to: Host-only Adapter
+      * Name: (i.e. vboxnet0)
+      * Advanced:
+        * Adapter type: Paravirtualized Network (virtio-net)
+
+## Live image
+* dd the resulting .iso to your blank VM and boot it.
 * Once booted:
   * Login with
     * User name: `user`
@@ -19,21 +39,14 @@
   * Create other pools and ZFS data sets as required for your environment
   * `bootstrap-zfs-debian-root.sh <root pool name> [extra-pool-1] [extra-pool-2]...`
 
+## Installed system
+
+
 # TODO:
 * https://github.com/zfsonlinux/zfs/wiki/Debian-Jessie-Root-on-ZFS `--rbind` rather than `-o bind`  what's the difference?
 
 
 # Old Notes used to get this project going
-
-```
-sgdisk --new=2:48:2047 --typecode=2:EF02 --change-name=2:"BIOS boot partition" /dev/sda
-```
-
-... and then `grub-install /dev/sda` really did just work
-
-NB:
-Also need to install `linux-image-amd64` and `linux-headers-amd64`
-
 
 `http_proxy=http://proxyhost:proxyport` environment variable tells debootstrap to download via a caching proxy
 

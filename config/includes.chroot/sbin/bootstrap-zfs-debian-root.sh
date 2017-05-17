@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#FIXME add a -h option.
+#FIXME: modify to run completely unattended and to pull all user input from VBoxControl guestproperty
 
 USAGE="\
 Usage: bootstrap-zfs-debian-root.sh <rootpool> [pooltwo]...
@@ -26,10 +26,16 @@ reverse(){
     done
 }
 
+
 if [ -z "$1" ]; then
     >&2 echo "Root pool argument required.  Unable to proceed.  Exiting"
     exit 1
 fi
+
+# FIXME: prompt user for apt-cacher-ng IP
+# make sure the input is valid and in the eth1 subnet
+# `curl -I --connect-timeout 1 http://${ACNG_IP}:3142` to test connectivity
+# if check fails, prompt user check the ACNG config and loop
 
 # if we aren't using a deb-caching proxy, check connectivity to debian's HTTP redirector
 if [ -z "$http_proxy" ] && ! curl -IL http://httpredir.debian.org/ >/dev/null 2>&1; then
