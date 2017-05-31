@@ -1,18 +1,37 @@
 #!/bin/bash --login
 
-#FIXME: should take an optional http_proxy argument and poke it into apt.conf.d
+USAGE="\
+Usage: stage-2-bootstrap.sh [options]
+
+Installs and configures remaining packages to convert cdebootstrapped ZFS
+chroot into a bootable ZFS-based Linux Containers (lxc) host.
+
+Options:    -i <IP address for bootstrapped host>
+            -k <SSH public key for root access>
+            -p <apt-cacher-ng IP address or hostname>:<port number>
+            -r <root password for bootstrapped host>
+"
+
+while getopts ":i:k:p:r:" OPTION; do
+    case $OPTION in
+        i ) IP_ADDRESS=$OPTARG;;
+        k ) ROOT_PUBKEY="$OPTARG";;
+        p ) APT_CACHER_NG_URL=$OPTARG;;
+        r ) ROOTPW="$OPTARG";;
+        * ) >&2 echo "Unrecognized option: $OPTARG";;
+    esac
+done
 
 validate_ipv4(){
     return $(echo "$1" | awk -F . '{if($1 >=0 && $1 < 256 && $2 >= 0 && $2 < 256 && $3 >= 0 && $4 >= 0 && $4 < 256)
     print 0; else print 1; exit}')
 }
 
-
 ln -s /proc/mounts /etc/mtab
 
 if [ -n "$1" ]; then
     cat > /etc/apt/apt.conf.d/99caching-proxy <<CACHING_PROXY_CONFIG
-Acquire::http { Proxy "$1"; };
+Acquire::http::Proxy "$APT_CACHER_NG_URL";
 CACHING_PROXY_CONFIG
 fi
 
@@ -52,19 +71,24 @@ lxc.network.name = eth1
 LXC_DEFAULT_CONFIG
 
 # Host-only network static config
-valid_static=false
+if [ -n "$IP_ADDRESS" ]; then
+    valid_static=true
+else
+    valid_static=false
+fi
+
 while ! $valid_static; do
     read -p "Enter a static IP address for the host-only network interface (br1)
 or press [return] to default to 192.168.56.2: " user_supplied_static
     if [ -n "$user_supplied_static" ]; then
         if validate_ipv4 "$user_supplied_static"; then
-            STATIC_IP=$user_supplied_static
+            IP_ADDRESS=$user_supplied_static
             valid_static=true
         else
             >&2 echo "Error: Improperly formatted IP address."
         fi
     else
-        STATIC_IP=192.168.56.2
+        IP_ADDRESS=192.168.56.2
         valid_static=true
     fi
 done
@@ -74,7 +98,7 @@ iface eth1 inet manual
 
 auto br1
 iface br1 inet static
-        address $STATIC_IP
+        address $IP_ADDRESS
         netmask 255.255.255.0
         bridge_ports eth1
         bridge_fd 0
@@ -82,10 +106,14 @@ BR1_CONFIG
 
 # SSH
 apt-get --assume-yes install openssh-server
-read -p "Paste an SSH public key for the root user, or hit [return] to skip: " ROOT_PUBLIC_KEY
-if [ -n "$ROOT_PUBLIC_KEY" ]; then
+
+if [ -z "$ROOT_PUBKEY" ]; then
+    read -p "Paste an SSH public key for the root user, or hit [return] to skip: " ROOT_PUBKEY
+fi
+
+if [ -n "$ROOT_PUBKEY" ]; then
     mkdir -m 755 /root/.ssh
-    echo "$ROOT_PUBLIC_KEY" > /root/.ssh/authorized_keys
+    echo "$ROOT_PUBKEY" > /root/.ssh/authorized_keys
 fi
 
 ex -s /etc/default/grub <<UPDATE_DEFAULT_GRUB
@@ -99,13 +127,17 @@ if ! update-grub; then
     exit 2
 fi
 
-echo "Set the root password for your newly-installed system."
-ROOT_PASSWD_SET=false
-while ! $ROOT_PASSWD_SET; do
-    if passwd; then
-        ROOT_PASSWD_SET=true
-    fi
-done
+if [ -n $ROOTPW ]; then
+    echo "root:$ROOTPW" | chpasswd
+else
+    echo "Set the root password for your newly-installed system."
+    ROOT_PASSWD_SET=false
+    while ! $ROOT_PASSWD_SET; do
+        if passwd; then
+            ROOT_PASSWD_SET=true
+        fi
+    done
+fi
 
 # irqbalance gets automatically started by kernel installation and hangs onto file handles in /dev/  Stop it before
 # leaving chroot

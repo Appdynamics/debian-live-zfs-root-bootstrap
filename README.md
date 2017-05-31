@@ -43,7 +43,7 @@
 
 
 # TODO:
-* https://github.com/zfsonlinux/zfs/wiki/Debian-Jessie-Root-on-ZFS `--rbind` rather than `-o bind`  what's the difference?
+* https://github.com/zfsonlinux/zfs/wiki/Debian-Jessie-Root-on-ZFS `--rbind` rather than `-o bind`  what's the difference? *`--rbind` is a recursive bind mount.*
 
 
 # Old Notes used to get this project going
