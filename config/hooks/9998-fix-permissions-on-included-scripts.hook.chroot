@@ -5,7 +5,8 @@ INCLUDED_SCRIPTS="/sbin/bootstrap-zfs-debian-root.sh
     /sbin/create-bios-boot-partition.sh
     /sbin/create-zfs-data-partition.sh
     /sbin/create-zfs-efi-partition.sh
-    /sbin/cleanup.sh"
+    /sbin/cleanup.sh
+    /sbin/unattended-bootstrap.sh"
 
 for script in $INCLUDED_SCRIPTS; do
     chmod 744 $script

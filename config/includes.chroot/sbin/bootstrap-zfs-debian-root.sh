@@ -7,14 +7,16 @@ Installs bootable Debian root filesystem to /mnt.
 
 Options:    -i <IP address for bootstrapped host>
             -k <SSH public key for root access>
+            -n <target hostname>
             -p http://<apt-cacher-ng host>:<port>
             -r <root password for bootstrapped host>
 "
-
-while getopts ":i:k:p:r:" OPTION; do
+#FIXME: add support for hostname argument
+while getopts ":i:k:n:p:r:" OPTION; do
     case $OPTION in
         i ) IP_ADDRESS=$OPTARG;;
         k ) ROOT_PUBKEY="$OPTARG";;
+        n ) TARGET_HOSTNAME=$OPTARG;;
         p ) APT_CACHER_NG_URL=$OPTARG
             export http_proxy=$OPTARG
             ;;
@@ -134,6 +136,17 @@ elif [ -n "$ROOT_PUBKEY" ]; then
     chroot /mnt /root/$STAGE2_BOOTSTRAP -k "$ROOT_PUBKEY" ${STAGE2_ARGS[@]}
 else
     chroot /mnt /root/$STAGE2_BOOTSTRAP ${STAGE2_ARGS[@]}
+fi
+
+if [ -n "$TARGET_HOSTNAME" ]; then
+    echo $TARGET_HOSTNAME > /mnt/etc/hostname
+    ex -s /mnt/etc/hosts <<ETC_HOSTS_EDITS
+2
+i
+127.0.1.1   $TARGET_HOSTNAME
+.
+wq
+ETC_HOSTS_EDITS
 fi
 
 if [ $? -gt 0 ]; then
