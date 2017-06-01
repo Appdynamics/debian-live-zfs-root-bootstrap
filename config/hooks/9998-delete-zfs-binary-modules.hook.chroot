@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Delete ZFS binary modules to avoid violating GPL
+ZFS_VERSION=`dkms status zfs | awk -F ', ' '{print $2; exit;}'`
+dkms remove zfs/$ZFS_VERSION --all
+
+echo "ExecStart=/usr/sbin/dkms install zfs/$ZFS_VERSION" >> /lib/systemd/system/zfs-dkms-build.service
+systemctl enable zfs-dkms-build.service

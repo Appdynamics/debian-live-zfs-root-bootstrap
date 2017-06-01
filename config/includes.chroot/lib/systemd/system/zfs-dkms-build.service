@@ -1,0 +1,11 @@
+[Unit]
+Description="Build ZFS kernel modules from source"
+After=local-fs.target
+Before=zfs-import-cache.service zfs-import-scan.service
+
+[Install]
+RequiredBy=zfs-import-cache.service zfs-import-scan.service
+
+[Service]
+Type=oneshot
+# config/hooks/9999-delete-zfs-binary-modules.hook.chroot will append an ExecStart= line

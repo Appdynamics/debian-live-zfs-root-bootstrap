@@ -45,7 +45,7 @@ else
 fi
 
 set -x
-rsync -Pavp\
+rsync -Pavp --delete\
     --exclude .git\
     --exclude .idea\
     --exclude *.iml\

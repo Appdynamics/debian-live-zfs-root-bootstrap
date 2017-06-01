@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# VBoxLinuxAdditions.run will fail with an error because it's unable to start the guest
+# additions during the live-build process.  `|| true` makes this OK, as far as live-build
+# is concerned.
+/installers/VBoxLinuxAdditions.run || true
