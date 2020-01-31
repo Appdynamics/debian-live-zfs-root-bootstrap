@@ -10,15 +10,15 @@ LB_APT_FTP_PROXY=""
 
 # $LB_APT_HTTP_PROXY: set apt/aptitude http proxy
 # (Default: autodetected or empty)
-LB_APT_HTTP_PROXY=""
+LB_APT_HTTP_PROXY="http://localhost:3142"
 
 # $LB_APT_PIPELINE: set apt/aptitude pipeline depth
 # (Default: )
 LB_APT_PIPELINE=""
 
 # $LB_APT_RECOMMENDS: set apt/aptitude recommends
-# (Default: false)
-LB_APT_RECOMMENDS="false"
+# (Default: true)
+LB_APT_RECOMMENDS="true"
 
 # $LB_APT_SECURE: set apt/aptitude security
 # (Default: true)
@@ -27,10 +27,6 @@ LB_APT_SECURE="true"
 # $LB_APT_SOURCE_ARCHIVES: set apt/aptitude source entries in sources.list
 # (Default: true)
 LB_APT_SOURCE_ARCHIVES="true"
-
-# $LB_BOOTSTRAP: set bootstrap program
-# (Default: debootstrap)
-LB_BOOTSTRAP="debootstrap"
 
 # $LB_CACHE: control cache
 # (Default: true)
@@ -65,8 +61,8 @@ LB_INITRAMFS="live-boot"
 LB_INITRAMFS_COMPRESSION="gzip"
 
 # $LB_INITSYSTEM: set init system
-# (Default: sysvinit)
-LB_INITSYSTEM="sysvinit"
+# (Default: systemd)
+LB_INITSYSTEM="systemd"
 
 # $LB_FDISK: set fdisk program
 # (Default: autodetected)
@@ -87,10 +83,6 @@ LB_SYSTEM="live"
 # $LB_TASKSEL: set tasksel program
 # (Default: apt)
 LB_TASKSEL="apt"
-
-# $LB_TEMPLATES: set templates
-# (Default: /usr/share/live/build/templates)
-LB_TEMPLATES="/usr/share/live/build/templates"
 
 # live-build options
 
@@ -121,7 +113,7 @@ _QUIET="false"
 # Internal stuff (FIXME)
 APT_OPTIONS="--yes"
 APTITUDE_OPTIONS="--assume-yes"
-DEBOOTSTRAP_OPTIONS="--variant=minbase"
-CDEBOOTSTRAP_OPTIONS=""
+DEBOOTSTRAP_OPTIONS=""
+DEBOOTSTRAP_SCRIPT=""
 GZIP_OPTIONS="-6  --rsyncable"
 ISOHYBRID_OPTIONS=""
